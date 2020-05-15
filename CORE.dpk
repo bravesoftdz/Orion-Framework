@@ -1,0 +1,63 @@
+package CORE;
+
+{$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  dbrtl,
+  vcl,
+  bindengine,
+  bindcomp,
+  vclFireDAC,
+  FireDAC,
+  FireDACCommonDriver,
+  FireDACCommon,
+  FireDACCommonODBC,
+  FireDACIBDriver,
+  IndySystem,
+  IndyProtocols,
+  IndyCore;
+
+contains
+  Orion.DAO.CORE in 'src\Orion.DAO.CORE.pas',
+  Orion.DAO.SQL in 'src\Orion.DAO.SQL.pas',
+  Orion.DAO.Types in 'src\Orion.DAO.Types.pas',
+  Orion.Data.Interfaces in 'src\Orion.Data.Interfaces.pas',
+  Orion.Utils in 'src\Orion.Utils.pas',
+  Orion.Data.Rtti in 'src\Orion.Data.Rtti.pas',
+  Orion.Attributes in 'src\Orion.Attributes.pas',
+  Orion.Data.Conexoes.FireDAC.Firebird30 in 'src\FireDAC Connectors\Orion.Data.Conexoes.FireDAC.Firebird30.pas',
+  Orion.Data.Conexoes.FireDAC.MSSQL in 'src\FireDAC Connectors\Orion.Data.Conexoes.FireDAC.MSSQL.pas',
+  Orion.Data.DataSets.FireDAC.MemTable in 'src\FireDAC Connectors\Orion.Data.DataSets.FireDAC.MemTable.pas',
+  Orion.Data.DataSets.FireDAC.Query in 'src\FireDAC Connectors\Orion.Data.DataSets.FireDAC.Query.pas',
+  Orion.Data.Factory.FireDAC in 'src\FireDAC Connectors\Orion.Data.Factory.FireDAC.pas',
+  Orion.RestClient.Indy in 'src\Orion.RestClient.Indy.pas',
+  Orion.RestClient.Interfaces in 'src\Orion.RestClient.Interfaces.pas';
+
+end.
+
