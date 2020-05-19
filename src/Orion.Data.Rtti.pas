@@ -329,6 +329,7 @@ var
   LValue :TValue;
   LField: TField;
   lStream : TMemoryStream;
+  lIgnorarCRUD : boolean;
 begin
   if not Assigned(aDataSet) then
     Exit;
@@ -344,14 +345,22 @@ begin
     begin
       for LPropRtti in LTypRtti.GetProperties do
       begin
+        lIgnorarCRUD := False;
         for LAttribRtti in LpropRtti.GetAttributes do
         begin
+          if LAttribRtti is IgnorarCRUD then
+            lIgnorarCRUD := True;
+
           if LAttribRtti is Campo then
           begin
             LNomeCampo := RetornarNomeCampoSemNomeTabela(Campo(LAttribRtti).Nome);
             Break;
           end;
         end;
+
+        if lIgnorarCRUD then
+          Continue;
+
         if LField.FieldName = LNomeCampo then
         begin
           case LpropRtti.PropertyType.TypeKind of
