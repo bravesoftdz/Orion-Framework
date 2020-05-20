@@ -358,8 +358,8 @@ begin
           end;
         end;
 
-        if lIgnorarCRUD then
-          Continue;
+//        if lIgnorarCRUD then
+//          Continue;
 
         if LField.FieldName = LNomeCampo then
         begin
