@@ -213,6 +213,7 @@ begin
   if FDataSet.SQL.Count > 0 then
   begin
     FDataSet.SQL.Add(' where 1 = 2');
+    FConexao.Conectar;
     FDataSet.Open;
   end;
 end;
@@ -320,6 +321,7 @@ end;
 function TOrionDataSetFireDACQuery.Open: iDataSet;
 begin
   Result := Self;
+  FConexao.Conectar;
   FDataSet.Open;
 end;
 

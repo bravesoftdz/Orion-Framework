@@ -3,30 +3,38 @@ unit Orion.DAO.CORE;
 interface
 
 uses
+  Data.DB,
   Orion.DAO.Types,
   Orion.Data.Interfaces,
+  Orion.DAO.SQL,
   System.Generics.Collections,
-  Orion.DAO.SQL, Data.DB, System.JSON;
+  System.JSON,
+  System.SysUtils;
 
 type
-
   TOrionDAORequest = class;
   TOrionDAOResponse = class;
   TOrionDAOOperations = class;
   TOrionDAOChild = class;
+  TOrionDAOCallBack = reference to procedure(aReqest : TOrionDAORequest; aResponse : TOrionDAOResponse; aNext : TProc);
 
   TOrionDAOCore = class
   private
+    FConexao : iConexao;
     FRequest: TOrionDAORequest;
     FResponse: TOrionDAOResponse;
     FSQL : TOrionDAOSQLBuilder;
     FDataSet : iDataSet;
     FOperations: TOrionDAOOperations;
     FChild : TOrionDAOChild;
+    FMiddlewares : TList<TOrionDAOCallBack>;
+    procedure Initialize;
   public
-    constructor Create(aDataSet : iDataSet);
+    constructor Create(aDataSet : iDataSet); overload;
+    constructor Create(aConexao : iConexao); overload;
     destructor Destroy; override;
 
+    function Use(aCallBack : TOrionDAOCallBack) : TOrionDAOCore;
     property Child: TOrionDAOChild read FChild write FChild;
     property Operations: TOrionDAOOperations read FOperations write FOperations;
     property Request: TOrionDAORequest read FRequest write FRequest;
@@ -39,10 +47,12 @@ type
   private
     FParams : TOrionParamsList;
     FSQL : TOrionDAOSQL;
+    FOrder : string;
   public
     constructor Create;
     destructor Destroy; override;
     procedure AddParam(aFieldName : string; aExpression : TOrionExpressions; aValue : Variant);
+    procedure AddOrder(aOrder : string);
     function Params : TOrionParamsList;
     function SQL : TOrionDAOSQL;
   end;
@@ -98,7 +108,8 @@ type
     constructor Create(aRequest : TOrionDAORequest; aResponse : TOrionDAOResponse; aSQLBuilder : TOrionDAOSQLBuilder);
     destructor Destroy; override;
 
-    procedure Find<T:class, constructor>;
+    procedure Find<T:class, constructor>; overload;
+    procedure Find; overload;
     procedure Insert<T:class, constructor>(aValue : T); overload;
     procedure Insert<T:class, constructor>(aValue : TObjectList<T>); overload;
     procedure Update<T:class, constructor>(aValue : T); overload;
@@ -135,17 +146,21 @@ implementation
 
 uses
   Orion.Data.Rtti,
-  System.SysUtils,
   System.Variants;
 
 constructor TOrionDAOCore.Create(aDataSet : iDataSet);
 begin
-  FRequest           := TOrionDAORequest.Create;
-  FResponse          := TOrionDAOResponse.Create(aDataSet);
-  FDataSet           := aDataSet.Clone;
-  FSQL               := TOrionDAOSQLBuilder.Create(FRequest.Params);
-  FOperations        := TOrionDAOOperations.Create(FRequest, FResponse, FSQL);
-  FChild             := TOrionDAOChild.Create;
+  FResponse := TOrionDAOResponse.Create(aDataSet);
+  FDataSet  := aDataSet.Clone;
+  Initialize;
+end;
+
+constructor TOrionDAOCore.Create(aConexao: iConexao);
+begin
+  FConexao  := aConexao;
+  FResponse := TOrionDAOResponse.Create(FConexao.Dataset);
+  FDataSet  := FConexao.Dataset;
+  Initialize;
 end;
 
 destructor TOrionDAOCore.Destroy;
@@ -155,10 +170,31 @@ begin
   FSQL.DisposeOf;
   FOperations.DisposeOf;
   FChild.DisposeOf;
+  FMiddlewares.DisposeOf;
   inherited;
 end;
 
+procedure TOrionDAOCore.Initialize;
+begin
+  FMiddlewares := TList<TOrionDAOCallBack>.Create;
+  FRequest     := TOrionDAORequest.Create;
+  FSQL         := TOrionDAOSQLBuilder.Create(FRequest.Params);
+  FOperations  := TOrionDAOOperations.Create(FRequest, FResponse, FSQL);
+  FChild       := TOrionDAOChild.Create;
+end;
+
+function TOrionDAOCore.Use(aCallBack: TOrionDAOCallBack): TOrionDAOCore;
+begin
+  Result := Self;
+  FMiddlewares.Add(aCallBack);
+end;
+
 { TOrionDAORequest }
+
+procedure TOrionDAORequest.AddOrder(aOrder: string);
+begin
+  FOrder := aOrder;
+end;
 
 procedure TOrionDAORequest.AddParam(aFieldName: string; aExpression: TOrionExpressions; aValue: Variant);
 var
@@ -413,15 +449,25 @@ begin
   end;
 end;
 
+procedure TOrionDAOOperations.Find;
+begin
+  try
+    FResponse.DataSet.Close.SQL(FRequest.SQL.BuildSQL).Open;
+  except on E: Exception do
+    raise OrionDAOCoreFindException.Create;
+  end;
+end;
+
 procedure TOrionDAOOperations.Find<T>;
 begin
-  if FRequest.SQL.isSQL then
-  begin
-    FResponse.DataSet.Close.SQL(FRequest.SQL.BuildSQL).Open;
-    Exit;
+  try
+    if FRequest.FOrder.Trim <> '' then
+      FResponse.DataSet.Close.SQL(FSQLBuilder.BuildSQL<T>('', FRequest.FOrder)).Open
+    else
+      FResponse.DataSet.Close.SQL(FSQLBuilder.BuildSQL<T>).Open;
+  except on E: Exception do
+    raise OrionDAOCoreFindException.Create;
   end;
-
-  FResponse.DataSet.Close.SQL(FSQLBuilder.BuildSQL<T>).Open;
 end;
 
 procedure TOrionDAOOperations.FindRegister<T>(aValue: T; aKeyFieldNames: array of string);

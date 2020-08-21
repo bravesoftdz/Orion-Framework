@@ -37,12 +37,9 @@ type
   Join = class(TCustomAttribute)
   private
     FJoin :string;
-    FTableName: string;
     procedure SetJoin(const Value: string);
-    procedure SetTableName(const Value: string);
   public
-    constructor Create(aTableName, aJoin :string);
-    property TableName :string read FTableName write SetTableName;
+    constructor Create(aJoin :string);
     property Join :string read FJoin write SetJoin;
   end;
 
@@ -137,20 +134,14 @@ end;
 
 { Join }
 
-constructor Join.Create(aTableName, aJoin :string);
+constructor Join.Create(aJoin :string);
 begin
   FJoin := aJoin;
-  FTableName := aTableName;
 end;
 
 procedure Join.SetJoin(const Value: string);
 begin
   FJoin := Value;
-end;
-
-procedure Join.SetTableName(const Value: string);
-begin
-  FTableName := Value;
 end;
 
 end.

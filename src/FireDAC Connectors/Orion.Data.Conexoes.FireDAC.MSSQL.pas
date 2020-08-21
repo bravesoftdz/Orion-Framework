@@ -41,6 +41,7 @@ type
     function Conexao :iConexao;
     function Conectar :iConexao;
     function GetConnection :TComponent;
+    function Dataset : iDataset;
 
     function CaminhoBanco(aValue :string) :iConexaoParametros;
     function UserName(aValue :string) :iConexaoParametros;
@@ -53,7 +54,7 @@ type
 implementation
 
 uses
-  System.SysUtils;
+  System.SysUtils, Orion.Data.DataSets.FireDAC.Query;
 
 { TOrionConexaoFireDACMSSQL }
 
@@ -90,6 +91,11 @@ constructor TOrionConexaoFireDACMSSQL.Create;
 begin
   FConexao := TFDConnection.Create(nil);
   FOSAuth := 'No';
+end;
+
+function TOrionConexaoFireDACMSSQL.Dataset: iDataset;
+begin
+  Result := TOrionDataSetFireDACQuery.New(Self);
 end;
 
 destructor TOrionConexaoFireDACMSSQL.Destroy;

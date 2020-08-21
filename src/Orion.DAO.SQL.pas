@@ -9,10 +9,11 @@ type
   TOrionDAOSQLBuilder = class
   private
     FParams : TOrionParamsList;
-    function InternalBuildSQL<T:class, constructor>(aWhere : string = '') : string;
+    function InternalBuildSQL<T:class, constructor>(aWhere : string = ''; aOrderBy : string = '') : string;
   public
     function BuildSQL<T:class, constructor> : string; overload;
     function BuildSQL<T:class, constructor>(aWhere : string) : string; overload;
+    function BuildSQL<T:class, constructor>(aWhere, aOrderBy : string) : string; overload;
     constructor Create(aDAOParams : TOrionParamsList);
     destructor Destroy; override;
   end;
@@ -30,7 +31,7 @@ begin
   Result := InternalBuildSQL<T>;
 end;
 
-function TOrionDAOSQLBuilder.InternalBuildSQL<T>(aWhere : string = '') : string;
+function TOrionDAOSQLBuilder.InternalBuildSQL<T>(aWhere : string = ''; aOrderBy : string = '') : string;
 var
   FirstRegister : Boolean;
   Key: string;
@@ -50,17 +51,34 @@ begin
   begin
     if FirstRegister then
     begin
-      Result := Result + ' where ' + Key + ReturnExpressionString(FParams.Items[Key].Expression) + QuotedStr(VarToStr(FParams.Items[Key].Value));
+      if FParams.Items[Key].Expression = exprBetween then
+        Result := Result + ' where ' + Key + ReturnExpressionString(FParams.Items[Key].Expression) + VarToStr(FParams.Items[Key].Value)
+      else
+        Result := Result + ' where ' + Key + ReturnExpressionString(FParams.Items[Key].Expression) + QuotedStr(VarToStr(FParams.Items[Key].Value));
       FirstRegister := False;
       Continue;
     end;
-    Result := Result + ' and ' + Key + ReturnExpressionString(FParams.Items[Key].Expression) + QuotedStr(VarToStr(FParams.Items[Key].Value));
+
+    if FParams.Items[Key].Expression = exprBetween then
+      Result := Result + ' and ' + Key + ReturnExpressionString(FParams.Items[Key].Expression) + VarToStr(FParams.Items[Key].Value)
+    else
+      Result := Result + ' and ' + Key + ReturnExpressionString(FParams.Items[Key].Expression) + QuotedStr(VarToStr(FParams.Items[Key].Value));
+
+//    Result := Result + ' and ' + Key + ReturnExpressionString(FParams.Items[Key].Expression) + QuotedStr(VarToStr(FParams.Items[Key].Value));
   end;
+
+  if aOrderBy.Trim <> '' then
+    Result := Result + ' order by ' + aOrderBy;
 end;
 
 function TOrionDAOSQLBuilder.BuildSQL<T>(aWhere: string): string;
 begin
   Result := InternalBuildSQL<T>(aWhere);
+end;
+
+function TOrionDAOSQLBuilder.BuildSQL<T>(aWhere, aOrderBy: string): string;
+begin
+  Result := InternalBuildSQL<T>(aWhere, aOrderBy);
 end;
 
 constructor TOrionDAOSQLBuilder.Create(aDAOParams : TOrionParamsList);

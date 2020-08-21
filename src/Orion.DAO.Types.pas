@@ -6,9 +6,17 @@ uses
   System.Generics.Collections, System.SysUtils;
 
 type
-  TOrionExpressions = (exprAND, exprOR, exprLIKE, exprEqual, exprNonEqual);
+  TOrionExpressions = (exprAND, exprOR, exprLIKE, exprEqual, exprNonEqual, exprBetween);
 
-    JsonConversionException = class(Exception)
+  OrionDAOCoreException = class(Exception)
+
+  end;
+
+  JsonConversionException = class(OrionDAOCoreException)
+    constructor Create;
+  end;
+
+  OrionDAOCoreFindException = class(OrionDAOCoreException)
     constructor Create;
   end;
 
@@ -31,6 +39,7 @@ begin
     exprLIKE     : Result := ' LIKE ';
     exprEqual    : Result := ' = ';
     exprNonEqual : Result := ' <> ';
+    exprBetween  : Result := ' between ';
   end;
 end;
 
@@ -39,6 +48,13 @@ end;
 constructor JsonConversionException.Create;
 begin
   Message := 'A estrutura dos dados é incompatível.';
+end;
+
+{ OrionDAOCoreFindException }
+
+constructor OrionDAOCoreFindException.Create;
+begin
+  Message := 'Failed to search data on DB';
 end;
 
 end.

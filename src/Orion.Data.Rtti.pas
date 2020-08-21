@@ -345,6 +345,9 @@ begin
     begin
       for LPropRtti in LTypRtti.GetProperties do
       begin
+        if not LpropRtti.IsWritable then
+          Continue;
+
         lIgnorarCRUD := False;
         for LAttribRtti in LpropRtti.GetAttributes do
         begin
@@ -360,7 +363,6 @@ begin
 
 //        if lIgnorarCRUD then
 //          Continue;
-
         if LField.FieldName = LNomeCampo then
         begin
           case LpropRtti.PropertyType.TypeKind of
@@ -596,28 +598,22 @@ var
   LTypRtti :TRttiType;
   LpropRtti :TRttiProperty;
   LAttribRtti :TCustomAttribute;
-  LListaJoins :TDictionary<string, string>;
-  Key: string;
+  LListaJoins :TList<string>;
+  lJoin: string;
 begin
   Result      := '';
   LCtxRtti    := TRttiContext.Create;
-  LListaJoins := TDictionary<string, string>.Create;
+  LListaJoins := TList<string>.Create;
   try
     LTypRtti := LCtxRtti.GetType(aClass.ClassInfo);
-    for LPropRtti in LTypRtti.GetProperties do
-    begin
-      for LAttribRtti in LPropRtti.GetAttributes do
-        if LAttribRtti is Join then
-        begin
-          LListaJoins.Add(Join(LAttribRtti).TableName, Join(LAttribRtti).Join);
-          Break;
-        end;
-    end;
+    for LAttribRtti in LTypRtti.GetAttributes do
+      if LAttribRtti is Join then
+        LListaJoins.Add(Join(LAttribRtti).Join);
 
     if LListaJoins.Count > 0 then
     begin
-      for Key in LListaJoins.Keys do
-        Result := Result + LListaJoins[Key] + ' '
+      for lJoin in LListaJoins do
+        Result := Result + lJoin + ' '
     end;
 
   finally

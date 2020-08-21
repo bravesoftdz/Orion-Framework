@@ -9,6 +9,7 @@ type
   TTipoBanco = (tpFirebird30, tpFirebird25, tpMSSQL);
   TAfterScroll = procedure (Sender : TDataset) of object;
   iConexaoParametros = interface;
+  iDataSet = interface;
 
   iConexao = interface
     ['{6A05F816-26E2-4D8F-8DB0-627D9C60C8AF}']
@@ -16,6 +17,7 @@ type
     function Conexao :iConexao;
     function Conectar :iConexao;
     function GetConnection :TComponent;
+    function Dataset : iDataset;
   end;
 
   iConexaoParametros = interface

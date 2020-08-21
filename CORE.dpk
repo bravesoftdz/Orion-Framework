@@ -41,7 +41,8 @@ requires
   FireDACIBDriver,
   IndySystem,
   IndyProtocols,
-  IndyCore;
+  IndyCore,
+  fmx;
 
 contains
   Orion.DAO.CORE in 'src\Orion.DAO.CORE.pas',
