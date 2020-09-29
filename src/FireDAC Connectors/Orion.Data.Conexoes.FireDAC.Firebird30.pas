@@ -34,9 +34,6 @@ type
   private
     FConexao :TFDConnection;
     FWaitCursor : TFDGUIxWaitCursor;
-    FCaminhoBanco :string;
-    FUserName :string;
-    FSenha :string;
     FPorta :integer;
     FServer :string;
     FParams : TStringList;
@@ -78,8 +75,6 @@ begin
 end;
 
 function TOrionConexaoFireDACFirebird30.Conectar: iConexao;
-var
-  lFDStanConnectionDef : IFDStanConnectionDef;
 begin
   Result := Self;
   FConexao.Connected := True;

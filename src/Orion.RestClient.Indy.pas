@@ -3,7 +3,11 @@ unit Orion.RestClient.Indy;
 interface
 
 uses
-  Orion.RestClient.Interfaces, System.JSON, IdHTTP, idGlobal;
+  Orion.RestClient.Interfaces,
+  System.JSON,
+  IdHTTP,
+  idGlobal,
+  IdException;
 
 type
   TOrionRestClientIndy = class(TInterfacedObject, iOrionRestClient)
@@ -13,6 +17,7 @@ type
     FResult : string;
     FBaseUrl : string;
     procedure SetToken;
+    function BuildUri(aUri : string) : string;
   public
     constructor Create; overload;
     constructor Create(aToken : string); overload;
@@ -33,19 +38,35 @@ implementation
 
 uses
   System.Classes,
-  System.NetEncoding;
+  System.NetEncoding,
+  System.SysUtils;
 
 { TOrionRestClientIndy }
 
 constructor TOrionRestClientIndy.Create;
 begin
   FIndyHttp := TIdHttp.Create(nil);
+//  FIndyHttp.HTTPOptions := [hoNoProtocolErrorException];
 end;
 
 function TOrionRestClientIndy.BaseUrl(aValue: string): iOrionRestClient;
 begin
   Result := Self;
   FBaseUrl := aValue;
+end;
+
+function TOrionRestClientIndy.BuildUri(aUri: string): string;
+begin
+  if FBaseUrl.Trim <> EmptyStr then
+  begin
+    if not aUri.Contains(FBaseUrl) then
+      Result := FBaseUrl + aUri
+    else
+      Result := aUri;
+    Exit;
+  end;
+
+  Result := aUri;
 end;
 
 function TOrionRestClientIndy.BaseUrl: string;
@@ -60,8 +81,16 @@ end;
 
 function TOrionRestClientIndy.Delete(aUri : string) : string;
 begin
-  FResult := FIndyHttp.Delete(aUri);
-  Result := FResult;
+  try
+    FResult := FIndyHttp.Delete(BuildUri(aUri));
+    Result := FResult;
+  except on E: EIdHTTPProtocolException do
+    begin
+      FResult := E.ErrorMessage;
+      Result  := E.ErrorMessage;
+      raise OrionRestClientException.Create(E.ErrorMessage);
+    end;
+  end;
 end;
 
 destructor TOrionRestClientIndy.Destroy;
@@ -72,8 +101,16 @@ end;
 
 function TOrionRestClientIndy.Get(aUri : string) : string;
 begin
-  FResult := FIndyHttp.Get(aUri);
-  Result := FResult;
+  try
+    FResult := FIndyHttp.Get(BuildUri(aUri));
+    Result := FResult;
+  except on E: EIdHTTPProtocolException do
+    begin
+      FResult := E.ErrorMessage;
+      Result  := E.ErrorMessage;
+      raise OrionRestClientException.Create(E.ErrorMessage);
+    end;
+  end;
 end;
 
 class function TOrionRestClientIndy.New(aToken: string): iOrionRestClient;
@@ -95,8 +132,16 @@ begin
   else
     lStream := TStringStream.Create(aBody);
   try
-    FResult := FIndyHttp.Post(aUri, lStream);
-    Result := FResult;
+    try
+      FResult := FIndyHttp.Post(BuildUri(aUri), lStream);
+      Result := FResult;
+    except on E: EIdHTTPProtocolException do
+      begin
+        FResult := E.ErrorMessage;
+        Result  := E.ErrorMessage;
+        raise OrionRestClientException.Create(E.ErrorMessage);
+      end;
+    end;
   finally
     lStream.DisposeOf;
   end;
@@ -108,8 +153,16 @@ var
 begin
   lStream := TStringStream.Create(TNetEncoding.Base64.Encode(aBody));
   try
-    FResult := FIndyHttp.Put(aUri, lStream);
-    Result := FResult;
+    try
+      FResult := FIndyHttp.Put(BuildUri(aUri), lStream);
+      Result := FResult;
+    except on E: EIdHTTPProtocolException do
+      begin
+        FResult := E.ErrorMessage;
+        Result  := E.ErrorMessage;
+        raise OrionRestClientException.Create(E.ErrorMessage);
+      end;
+    end;
   finally
     lStream.Free;
   end;

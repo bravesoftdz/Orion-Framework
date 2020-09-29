@@ -40,6 +40,7 @@ type
     class function DecodeBase64<T:class, constructor>(aValue: string): T; overload;
     class procedure DecodeBase64(aValue : string; aResult : TMemoryStream); overload;
     class procedure DecodeBase64(aValue, aResult : TStream); overload;
+    class function DecodeBase64FromObject<T:class, constructor>(aBase64 : string) : T;
     class function BitmapFromBase64(aBitmap : TBitmap) : string;
     class function Base64FromStream(aBase64 : string) : TStream;
     function ResultCode201 : TJSONArray;
@@ -58,13 +59,12 @@ var
   lImput : TStringStream;
   lEncoding : TBase64Encoding;
 begin
-  lImput := TStringStream.Create(aBase64, TEncoding.ASCII);
-  Result := TStringStream.Create('', TEncoding.ASCII);
+  lImput    := TStringStream.Create(aBase64, TEncoding.ASCII);
+  Result    := TStringStream.Create('', TEncoding.ASCII);
   lEncoding := TBase64Encoding.Create(0);
   try
     lImput.Position := 0;
     lEncoding.Decode(lImput, Result);
-//    Result := TBitmap.CreateFromStream(lOutput);
   finally
     lImput.Free;
     lEncoding.Free;
@@ -123,6 +123,14 @@ end;
 class function TOrionUtils.DecodeBase64<T>(aValue: string): T;
 begin
   Result := JSONToObject<T>(DecodeBase64(aValue));
+end;
+
+class function TOrionUtils.DecodeBase64FromObject<T>(aBase64: string): T;
+var
+  lObjectString : string;
+begin
+  lObjectString := DecodeBase64(aBase64);
+  Result := JSONStringToObject<T>(lObjectString);
 end;
 
 destructor TOrionUtils.Destroy;
