@@ -58,8 +58,6 @@ type
     function RecordCount : integer;
     function Locate(const aKeyFields: string; const aKeyValues: Variant; aOptions: TLocateOptions): Boolean;
     function DataSource(aValue :TDataSource) :iDataSet;
-    function AsJSONObject :TJSONObject;
-    function AsJSONArray :TJSONArray;
     function Fields :TFields;
     function FieldDefs :TFieldDefs;
     function Filter(aValue :string) : iDataSet;
@@ -95,16 +93,6 @@ function TOrionDataSetFireDACMemTable.ApplyUpdates(aMaxErrors: integer): integer
 begin
   Result := 0;
   FDataset.ApplyUpdates;
-end;
-
-function TOrionDataSetFireDACMemTable.AsJSONArray: TJSONArray;
-begin
-
-end;
-
-function TOrionDataSetFireDACMemTable.AsJSONObject: TJSONObject;
-begin
-
 end;
 
 function TOrionDataSetFireDACMemTable.Assign(aValue: TPersistent): iDataSet;

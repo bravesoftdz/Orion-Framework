@@ -57,8 +57,6 @@ type
     function Prior :iDataSet;
     function RecordCount :integer;
     function DataSource(aValue :TDataSource) :iDataSet;
-    function AsJSONObject :TJSONObject;
-    function AsJSONArray :TJSONArray;
     function Filter(aValue :string) : iDataSet;
     function Filtered(aValue :boolean) : iDataSet;
     function DataSet : TDataSet;
@@ -110,16 +108,6 @@ begin
       raise Exception.Create('Falha na gravação dos dados no banco de dados.');
     end;
   end;
-end;
-
-function TOrionDataSetFireDACQuery.AsJSONArray: TJSONArray;
-begin
-
-end;
-
-function TOrionDataSetFireDACQuery.AsJSONObject: TJSONObject;
-begin
-
 end;
 
 function TOrionDataSetFireDACQuery.Assign(aValue: TPersistent): iDataSet;

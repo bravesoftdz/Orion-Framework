@@ -38,7 +38,8 @@ type
     property Child: TOrionDAOChild read FChild write FChild;
     property Operations: TOrionDAOOperations read FOperations write FOperations;
     property Request: TOrionDAORequest read FRequest write FRequest;
-    property Response: TOrionDAOResponse read FResponse write FResponse;
+    function Response : TOrionDAOResponse overload;
+    function Response<T: class> : T; overload;
   end;
 
   TOrionDAOSQL = class;
@@ -181,6 +182,16 @@ begin
   FSQL         := TOrionDAOSQLBuilder.Create(FRequest.Params);
   FOperations  := TOrionDAOOperations.Create(FRequest, FResponse, FSQL);
   FChild       := TOrionDAOChild.Create;
+end;
+
+function TOrionDAOCore.Response: TOrionDAOResponse;
+begin
+  Result := FResponse;
+end;
+
+function TOrionDAOCore.Response<T>: T;
+begin
+
 end;
 
 function TOrionDAOCore.Use(aCallBack: TOrionDAOCallBack): TOrionDAOCore;
